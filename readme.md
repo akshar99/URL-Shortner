@@ -84,14 +84,14 @@ uvicorn testProject.main:app --reload
 ```json
 POST /url
 {
-  "target_url": "https://realpython.com/"
+  "target_url": "https://github.com/akshar99"
 }
 ```
 
 **Response:**
 ```json
 {
-  "target_url": "https://realpython.com/",
+  "target_url": "https://github.com/akshar99/",
   "url": "ABCDE",
   "admin_url": "XKRTU123"
 }
@@ -105,7 +105,7 @@ Visit:
 ```
 http://127.0.0.1:8000/ABCDE
 ```
-This redirects to **https://realpython.com/**.
+This redirects to **https://github.com/akshar99/**.
 
 ---
 
