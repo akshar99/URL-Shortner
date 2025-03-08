@@ -1,6 +1,7 @@
 import secrets
-
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi.responses import RedirectResponse
+from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import validators
@@ -11,6 +12,13 @@ from .database import SessionLocal, engine, Base
 
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 models.Base.metadata.create_all(bind=engine)
 
 def get_db():
@@ -29,6 +37,9 @@ class item(BaseModel):
     info : Optional[str]  = None
 def raiseBadRequest(message):
     raise HTTPException(status_code=400, detail=message)
+def raise_not_found(request):
+    message = f"URL {request.url} does not exist"
+    raise HTTPException(status_code=404, detail=message)
 
 @app.get("/")
 async def read_root():
@@ -49,3 +60,19 @@ async def create_url(url : schemas.URLBase, db: Session= Depends(get_db)):
     db_url.url = key
     db_url.admin_url = secret_key
     return db_url
+
+@app.get("/{url_key}")
+def forward_to_target_url(
+        url_key: str,
+        request: Request,
+        db: Session = Depends(get_db)
+    ):
+    db_url = (
+        db.query(models.URL)
+        .filter(models.URL.key == url_key, models.URL.is_active)
+        .first()
+    )
+    if db_url:
+        return RedirectResponse(db_url.target_url)
+    else:
+        raise_not_found(request)
