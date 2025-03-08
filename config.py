@@ -6,6 +6,6 @@ class Settings(BaseSettings):
     db_url: str = "sqlite:///./shortner.db"
 
 def get_settings() -> Settings:
-    settings = Settings
+    settings = Settings()
     print(f"returning settings for: {settings.env_name}")
     return settings
